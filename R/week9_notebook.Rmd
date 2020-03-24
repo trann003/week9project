@@ -1,0 +1,55 @@
+---
+title: "R Notebook"
+output:
+  pdf_document: default
+  html_notebook: default
+---
+
+
+# R studio API
+```{r}
+setwd(dirname(rstudioapi::getActiveDocumentContext()$path))
+```
+
+
+# Libraries
+```{r, warning=F, message=F}
+library(tidyverse)
+library(ggplot2)
+library(psych)
+```
+
+
+# Data import
+
+```{r, warning=F, message=F}
+week9_tbl <- read_csv("../data/week3.csv") %>%
+  mutate(timeStart = lubridate::ymd_hms(timeStart), 
+         timeEnd   = lubridate::ymd_hms(timeEnd)) %>% 
+  mutate(condition = recode_factor(condition, "A" = "Block A", "B" = "Block B", "C" = "Control"),
+         gender    = recode_factor(gender, "M" = "Male", "F" = "Female")) %>% 
+  filter(q6 == 1)
+```
+
+# Visualization
+```{r}
+week9_tbl <- week9_tbl %>%
+  mutate(mean_Q1_Q5  = rowMeans(select(., q1:q5)),
+         mean_Q6_Q10 = rowMeans(select(., q6:q10))) 
+
+week9_tbl %>% 
+  ggplot(aes(x = mean_Q1_Q5, y = mean_Q6_Q10)) +
+  geom_point() + 
+  geom_smooth(method = lm, se = F)
+```
+
+# Analysis
+```{r}
+cor.test(week9_tbl$mean_Q1_Q5, week9_tbl$mean_Q6_Q10)
+```
+
+
+
+# R shiny app
+
+https://trann003.shinyapps.io/week9/

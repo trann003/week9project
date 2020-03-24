@@ -1,0 +1,67 @@
+---
+title: "Week 9 project"
+author: "Khue Tran"
+date: "3/23/2020"
+output: pdf_document
+knit: (function(inputFile, encoding) {
+    rmarkdown::render(inputFile, encoding = encoding, output_dir = "../output/")
+  })
+
+---
+
+
+# Libraries
+```{r, include=F}
+library(tidyverse)
+library(ggplot2)
+library(psych)
+```
+
+
+# Data import
+
+Data cleaning steps
+
+* Change format of timeStart and timeEnd to date format
+
+* Recode Condition as Block A, Block B, and Control
+
+* Recode Gender as Male and Female
+
+* Filter Q6 for attentive response 
+
+```{r, warning=F, message=F}
+week9_tbl <- read_csv("../data/week3.csv") %>%
+  mutate(timeStart = lubridate::ymd_hms(timeStart), 
+         timeEnd   = lubridate::ymd_hms(timeEnd)) %>% 
+  mutate(condition = recode_factor(condition, "A" = "Block A", "B" = "Block B", "C" = "Control"),
+         gender    = recode_factor(gender, "M" = "Male", "F" = "Female")) %>% 
+  filter(q6 == 1)
+```
+
+# Visualization
+```{r, echo=F}
+week9_tbl <- week9_tbl %>%
+  mutate(mean_Q1_Q5  = rowMeans(select(., q1:q5)),
+         mean_Q6_Q10 = rowMeans(select(., q6:q10))) 
+
+week9_tbl %>% 
+  ggplot(aes(x = mean_Q1_Q5, y = mean_Q6_Q10)) +
+  geom_point() + 
+  geom_smooth(method = lm, se = F)
+```
+
+
+The scatter plot displays the relationship between mean of Q1 to Q5 and mean of Q6 to Q10.
+
+
+# Analysis
+```{r}
+cor.test(week9_tbl$mean_Q1_Q5, week9_tbl$mean_Q6_Q10)
+```
+
+The correlation was -0.100891 (p>.05), which is not statistically significant.
+
+# R shiny app
+
+https://trann003.shinyapps.io/week9/
